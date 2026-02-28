@@ -21,13 +21,11 @@ public class WebSocketController {
     public void handleTestMessage(@Payload NotificationMessage message, Principal principal) {
         log.info("Received test message from user: {}", principal != null ? principal.getName() : "anonymous");
 
-        // Echo the message back to the sender
         if (principal != null) {
             messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/notifications",
-                new NotificationMessage(principal.getName(), "Test message received: " + message.getMessage())
-            );
+                    principal.getName(),
+                    "/queue/notifications",
+                    new NotificationMessage(principal.getName(), "Test message received: " + message.getMessage()));
         }
     }
 
@@ -36,10 +34,9 @@ public class WebSocketController {
         if (principal != null) {
             log.info("User {} subscribed to notifications", principal.getName());
             messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/notifications",
-                new NotificationMessage(principal.getName(), "Successfully connected to notifications")
-            );
+                    principal.getName(),
+                    "/queue/notifications",
+                    new NotificationMessage(principal.getName(), "Successfully connected to notifications"));
         }
     }
 }

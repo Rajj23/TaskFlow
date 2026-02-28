@@ -23,7 +23,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final TaskRepo taskRepo;
     private final SimpMessagingTemplate messagingTemplate;
 
-    // To prevent duplicate notifications for the same task
     private final Set<Long> notifiedTasks = ConcurrentHashMap.newKeySet();
 
     @Override
@@ -33,15 +32,13 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("Checking for tasks due between {} and {}", now, threshold);
 
-        // More efficient query - only get tasks within deadline window
         List<Task> upcomingTasks = taskRepo.findTasksWithDeadlineBetween(now, threshold);
 
         int notificationsSent = 0;
-        for(Task task : upcomingTasks){
-            // Prevent duplicate notifications
-            if(!notifiedTasks.contains(task.getId()) &&
-               task.getDeadline() != null &&
-               task.getUser() != null) {
+        for (Task task : upcomingTasks) {
+            if (!notifiedTasks.contains(task.getId()) &&
+                    task.getDeadline() != null &&
+                    task.getUser() != null) {
 
                 sendNotification(task);
                 notifiedTasks.add(task.getId());
@@ -51,7 +48,6 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("Sent {} notifications for upcoming tasks", notificationsSent);
 
-        // Clean up old notified tasks (tasks that are already past deadline)
         cleanupOldNotifications();
     }
 
@@ -59,26 +55,24 @@ public class NotificationServiceImpl implements NotificationService {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
             String message = String.format("âš ï¸ Task '%s' is due at %s",
-                task.getTitle(),
-                task.getDeadline().format(formatter));
+                    task.getTitle(),
+                    task.getDeadline().format(formatter));
 
             NotificationMessage notification = new NotificationMessage(
-                task.getUser().getUsername(),
-                message
-            );
+                    task.getUser().getUsername(),
+                    message);
 
             messagingTemplate.convertAndSendToUser(
-                task.getUser().getUsername(),
-                "/queue/notifications",
-                notification
-            );
+                    task.getUser().getUsername(),
+                    "/queue/notifications",
+                    notification);
 
             log.debug("Sent notification to user {} for task: {}",
-                task.getUser().getUsername(), task.getTitle());
+                    task.getUser().getUsername(), task.getTitle());
 
         } catch (Exception e) {
             log.error("Failed to send notification for task {}: {}",
-                task.getId(), e.getMessage());
+                    task.getId(), e.getMessage());
         }
     }
 
@@ -86,7 +80,7 @@ public class NotificationServiceImpl implements NotificationService {
         LocalDateTime now = LocalDateTime.now();
         List<Task> pastTasks = taskRepo.findTasksWithDeadlineBefore(now);
 
-        for(Task task : pastTasks) {
+        for (Task task : pastTasks) {
             notifiedTasks.remove(task.getId());
         }
     }
@@ -98,10 +92,9 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationMessage notification = new NotificationMessage(username, message);
 
             messagingTemplate.convertAndSendToUser(
-                username,
-                "/queue/notifications",
-                notification
-            );
+                    username,
+                    "/queue/notifications",
+                    notification);
 
             log.debug("Sent task creation notification to user {}: {}", username, taskTitle);
         } catch (Exception e) {
@@ -116,10 +109,9 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationMessage notification = new NotificationMessage(username, message);
 
             messagingTemplate.convertAndSendToUser(
-                username,
-                "/queue/notifications",
-                notification
-            );
+                    username,
+                    "/queue/notifications",
+                    notification);
 
             log.debug("Sent task completion notification to user {}: {}", username, taskTitle);
         } catch (Exception e) {
@@ -134,10 +126,9 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationMessage notification = new NotificationMessage(username, message);
 
             messagingTemplate.convertAndSendToUser(
-                username,
-                "/queue/notifications",
-                notification
-            );
+                    username,
+                    "/queue/notifications",
+                    notification);
 
             log.debug("Sent overdue notification to user {}: {}", username, taskTitle);
         } catch (Exception e) {

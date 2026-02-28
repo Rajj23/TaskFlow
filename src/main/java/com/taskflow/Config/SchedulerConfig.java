@@ -13,8 +13,7 @@ public class SchedulerConfig {
 
     private final NotificationService notificationService;
 
-    // Check for upcoming tasks every 15 minutes
-    @Scheduled(fixedRate = 900000) // 15 minutes in milliseconds
+    @Scheduled(fixedRate = 900000)
     public void checkUpcomingDeadlines() {
         notificationService.checkUpcomingTasks();
     }

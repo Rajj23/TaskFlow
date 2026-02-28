@@ -31,9 +31,8 @@ public class TaskServiceImpl implements TaskService {
 
     private final Map<String, TaskTrie> userTrieCache = new ConcurrentHashMap<>();
 
-
     @Override
-    public TaskResponse createTask(TaskRequest request,String username){
+    public TaskResponse createTask(TaskRequest request, String username) {
         User user = userService.findByUsername(username);
         Task task = mapToTask(request);
         task.setUser(user);
@@ -45,19 +44,18 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Page<TaskResponse> getAllTask(String username,int page,int size) {
+    public Page<TaskResponse> getAllTask(String username, int page, int size) {
         User user = userService.findByUsername(username);
-        Pageable pageable = PageRequest.of(page,size, Sort.by("deadline").ascending());
-        Page<Task> tasks = taskRepo.findByUser(user,pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("deadline").ascending());
+        Page<Task> tasks = taskRepo.findByUser(user, pageable);
         return tasks.map(this::mapToResponse);
     }
 
-
     @Override
-    public TaskResponse updateTask(Long taskId,TaskRequest request,String username){
+    public TaskResponse updateTask(Long taskId, TaskRequest request, String username) {
         Task task = taskRepo.findById(taskId)
-                .orElseThrow(()->new RuntimeException("Task not found"));
-        if(!task.getUser().getUsername().equals(username)){
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        if (!task.getUser().getUsername().equals(username)) {
             throw new RuntimeException("Not your task");
         }
         task.setTitle(request.getTitle());
@@ -75,8 +73,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void deleteTask(Long taskId, String username) {
         Task task = taskRepo.findById(taskId)
-                .orElseThrow(()->new RuntimeException("Task not found"));
-        if(!task.getUser().getUsername().equals(username)){
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        if (!task.getUser().getUsername().equals(username)) {
             throw new RuntimeException("Not your task");
         }
         taskRepo.delete(task);
@@ -84,29 +82,29 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> sortByDeadline(String username, int page, int size,String order) {
+    public List<TaskResponse> sortByDeadline(String username, int page, int size, String order) {
         List<Task> tasks = getAllTaskRaw(username);
         List<Task> sorted = mergeSortByDeadline(tasks);
-        if("desc".equalsIgnoreCase(order)){
+        if ("desc".equalsIgnoreCase(order)) {
             Collections.reverse(sorted);
         }
-        List<Task> paged = getPage(sorted,page,size);
+        List<Task> paged = getPage(sorted, page, size);
         return paged.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<TaskResponse> sortByPriority(String username, int page, int size,String order) {
+    public List<TaskResponse> sortByPriority(String username, int page, int size, String order) {
         List<Task> tasks = getAllTaskRaw(username);
         List<Task> sorted = quickSortByPriority(tasks);
-        if("desc".equalsIgnoreCase(order)){
+        if ("desc".equalsIgnoreCase(order)) {
             Collections.reverse(sorted);
         }
-        List<Task> paged = getPage(sorted,page,size);
+        List<Task> paged = getPage(sorted, page, size);
         return paged.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<TaskResponse> searchTasks(String query, String username){
+    public List<TaskResponse> searchTasks(String query, String username) {
         TaskTrie userTrie = getOrBuildTrieForUser(username);
         List<Task> matchedTasks = userTrie.searchByPrefix(query);
         return matchedTasks.stream()
@@ -114,21 +112,21 @@ public class TaskServiceImpl implements TaskService {
                 .collect(Collectors.toList());
     }
 
-
     @Override
-    public List<TaskResponse> filterByDateRange(LocalDateTime start, LocalDateTime end, String status, String username){
+    public List<TaskResponse> filterByDateRange(LocalDateTime start, LocalDateTime end, String status,
+            String username) {
         List<Task> userTasks = getAllTaskRaw(username);
         return userTasks.stream()
                 .filter(task -> {
                     boolean matches = true;
-                    if(status!=null && !status.isEmpty()){
-                        matches&=task.getStatus()!=null && task.getStatus().equalsIgnoreCase(status);
+                    if (status != null && !status.isEmpty()) {
+                        matches &= task.getStatus() != null && task.getStatus().equalsIgnoreCase(status);
                     }
-                    if(start!=null){
-                        matches&=task.getDeadline()!=null && !task.getDeadline().isBefore(start);
+                    if (start != null) {
+                        matches &= task.getDeadline() != null && !task.getDeadline().isBefore(start);
                     }
-                    if(end!=null){
-                        matches&=task.getDeadline()!=null && !task.getDeadline().isAfter(end);
+                    if (end != null) {
+                        matches &= task.getDeadline() != null && !task.getDeadline().isAfter(end);
                     }
                     return matches;
                 })
@@ -136,15 +134,11 @@ public class TaskServiceImpl implements TaskService {
                 .collect(Collectors.toList());
     }
 
-
-
-    private List<Task> getAllTaskRaw(String username){
+    private List<Task> getAllTaskRaw(String username) {
         User user = userService.findByUsername(username);
         return taskRepo.findByUser(user);
     }
 
-
-    // Mapper
     private Task mapToTask(TaskRequest request) {
         return Task.builder()
                 .title(request.getTitle())
@@ -162,55 +156,52 @@ public class TaskServiceImpl implements TaskService {
                 task.getDescription(),
                 task.getDeadline(),
                 task.getPriority(),
-                task.getStatus()
-        );
+                task.getStatus());
     }
 
-
-
-    // Merge Sort
-    private List<Task> mergeSortByDeadline(List<Task> tasks){
-        if(tasks.size()<=1) return tasks;
-        int mid = tasks.size()/2;
-        List<Task> left = mergeSortByDeadline(tasks.subList(0,mid));
+    private List<Task> mergeSortByDeadline(List<Task> tasks) {
+        if (tasks.size() <= 1)
+            return tasks;
+        int mid = tasks.size() / 2;
+        List<Task> left = mergeSortByDeadline(tasks.subList(0, mid));
         List<Task> right = mergeSortByDeadline(tasks.subList(mid, tasks.size()));
-        return mergeDeadline(left,right);
+        return mergeDeadline(left, right);
     }
 
-    private List<Task> mergeDeadline(List<Task> left,List<Task> right){
+    private List<Task> mergeDeadline(List<Task> left, List<Task> right) {
         List<Task> sorted = new ArrayList<>();
-        int i=0,j=0;
-        while(i<left.size()&&j<right.size()){
+        int i = 0, j = 0;
+        while (i < left.size() && j < right.size()) {
             LocalDateTime leftDeadline = left.get(i).getDeadline();
             LocalDateTime rightDeadline = right.get(j).getDeadline();
 
-            if(leftDeadline == null && rightDeadline == null){
+            if (leftDeadline == null && rightDeadline == null) {
                 sorted.add(left.get(i++));
-            } else if(leftDeadline == null){
+            } else if (leftDeadline == null) {
                 sorted.add(right.get(j++));
-            } else if(rightDeadline == null){
+            } else if (rightDeadline == null) {
                 sorted.add(left.get(i++));
-            } else if(leftDeadline.isBefore(rightDeadline)){
+            } else if (leftDeadline.isBefore(rightDeadline)) {
                 sorted.add(left.get(i++));
             } else {
                 sorted.add(right.get(j++));
             }
         }
 
-        while(i < left.size()) {
+        while (i < left.size()) {
             sorted.add(left.get(i++));
         }
-        while(j < right.size()) {
+        while (j < right.size()) {
             sorted.add(right.get(j++));
         }
         return sorted;
     }
 
-    // Quick Sort
-    private List<Task> quickSortByPriority(List<Task> tasks){
-        if(tasks.size()<=1) return tasks;
+    private List<Task> quickSortByPriority(List<Task> tasks) {
+        if (tasks.size() <= 1)
+            return tasks;
 
-        Task pivot = tasks.get(tasks.size()-1);
+        Task pivot = tasks.get(tasks.size() - 1);
         Integer pivotPriority = pivot.getPriority();
 
         List<Task> left = new ArrayList<>();
@@ -218,18 +209,17 @@ public class TaskServiceImpl implements TaskService {
         List<Task> pivots = new ArrayList<>();
         pivots.add(pivot);
 
-        for(int i=0;i<tasks.size()-1;i++){
+        for (int i = 0; i < tasks.size() - 1; i++) {
             Task current = tasks.get(i);
             Integer currPriority = current.getPriority();
 
-
-            if(currPriority == null && pivotPriority == null){
+            if (currPriority == null && pivotPriority == null) {
                 pivots.add(current);
-            } else if(currPriority == null){
+            } else if (currPriority == null) {
                 right.add(current);
-            } else if(pivotPriority == null){
+            } else if (pivotPriority == null) {
                 left.add(current);
-            } else if(currPriority < pivotPriority){
+            } else if (currPriority < pivotPriority) {
                 left.add(current);
             } else if (currPriority > pivotPriority) {
                 right.add(current);
@@ -244,23 +234,17 @@ public class TaskServiceImpl implements TaskService {
         return sorted;
     }
 
-    // Paging helper
-    private List<Task> getPage(List<Task> list,int page,int size){
-        int fromIndex = page*size;
-        int toIndex = Math.min(fromIndex+size,list.size());
-        if(fromIndex>=list.size()){
+    private List<Task> getPage(List<Task> list, int page, int size) {
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, list.size());
+        if (fromIndex >= list.size()) {
             return new ArrayList<>();
         }
-        return list.subList(fromIndex,toIndex);
+        return list.subList(fromIndex, toIndex);
     }
 
-
-
-
-
-    //    Admin
     @Override
-    public List<TaskResponse> getAllTasksForAdmin(){
+    public List<TaskResponse> getAllTasksForAdmin() {
         List<Task> tasks = taskRepo.findAll();
         List<TaskResponse> responses = tasks.stream()
                 .map(this::mapToResponse)
@@ -269,16 +253,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void deleteAnyTask(Long taskId){
+    public void deleteAnyTask(Long taskId) {
         Task task = taskRepo.findById(taskId)
-                .orElseThrow(()->new RuntimeException("Task not found"));
+                .orElseThrow(() -> new RuntimeException("Task not found"));
         taskRepo.delete(task);
     }
 
     @Override
-    public TaskResponse updateAnyTask(Long taskId, TaskRequest request){
+    public TaskResponse updateAnyTask(Long taskId, TaskRequest request) {
         Task task = taskRepo.findById(taskId)
-                .orElseThrow(()-> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new RuntimeException("Task not found"));
         task.setTitle(request.getTitle());
         task.setStatus(request.getStatus());
         task.setDescription(request.getDescription());
@@ -293,12 +277,9 @@ public class TaskServiceImpl implements TaskService {
         return taskRepo.findByUser(user).size();
     }
 
-
-    // Trie
     private TaskTrie getOrBuildTrieForUser(String username) {
         return userTrieCache.computeIfAbsent(username, this::buildTrieForUser);
     }
-
 
     private TaskTrie buildTrieForUser(String username) {
         TaskTrie trie = new TaskTrie();

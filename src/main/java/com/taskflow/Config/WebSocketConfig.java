@@ -11,26 +11,21 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config){
-        // Enable simple broker for topics and queues
+    public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic", "/queue");
-
-        // Set application destination prefix for client messages
         config.setApplicationDestinationPrefixes("/app");
-
-        // Set user destination prefix for user-specific messages
         config.setUserDestinationPrefix("/user");
     }
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry){
-        // Register WebSocket endpoint with proper CORS configuration
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:3000","https://organizotask.vercel.app/") // More secure than *
-                .withSockJS(); // Enable SockJS fallback
+                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:3000",
+                        "https://organizotask.vercel.app/")
+                .withSockJS();
 
-        // Also register without SockJS for native WebSocket clients
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:3000","https://organizotask.vercel.app/");
+                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:3000",
+                        "https://organizotask.vercel.app/");
     }
 }
