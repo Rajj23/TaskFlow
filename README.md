@@ -1,4 +1,4 @@
-﻿# Task Management Backend
+﻿# TaskFlow Backend
 
 A production-ready Spring Boot 3 (Java 21) backend for a task management application. It exposes secure REST APIs and WebSocket endpoints for managing users, tasks, and notifications.
 
@@ -81,7 +81,7 @@ The backend starts at `http://localhost:8081`.
 - **WebSocket/STOMP**
   - Connect to `/ws`, send messages to `/app/**`, and subscribe to `/user/queue/notifications`
 
-For detailed request/response bodies, see the controller and DTO classes under `src/main/java/com/taskManagment/demo`.
+For detailed request/response bodies, see the controller and DTO classes under `src/main/java/com/taskflow`.
 
 ---
 

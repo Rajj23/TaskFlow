@@ -6,13 +6,13 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.3</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/> 
 	</parent>
-	<groupId>com.taskManagment</groupId>
-	<artifactId>demo</artifactId>
+	<groupId>com.taskflow</groupId>
+	<artifactId>taskflow</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Task Managment</name>
-	<description>Demo project for Spring Boot</description>
+	<name>TaskFlow</name>
+	<description>TaskFlow — A task management backend</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -43,9 +43,6 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
-
-
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -67,7 +64,6 @@
 			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
