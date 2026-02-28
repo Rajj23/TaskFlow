@@ -33,6 +33,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     private static final String[] PUBLIC_WHITELIST = {
+            "/",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
