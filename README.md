@@ -15,11 +15,11 @@ A production-ready Spring Boot 3 (Java 21) backend for a task management applica
 
 ---
 
-## ER Diagram
+## System Architecture Diagram
 
-The core data model is shown below:
+The TaskFlow system architecture is shown below:
 
-![ER Diagram](Er-diagram.png)
+![TaskFlow System Architecture Diagram](TaskFlow.png)
 
 ---
 
